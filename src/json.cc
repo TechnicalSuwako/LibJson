@@ -224,25 +224,88 @@ namespace json {
     return Parser(content).parse();
   }
 
-  string Value::serialize() const {
-    if (is_null()) return "null";
-    if (is_bool()) return as_bool() ? "true" : "false";
-    if (is_number()) return serialize_number(as_number());
-    if (is_string()) return serialize_string(as_string());
-    if (is_array()) return serialize_array(as_array());
-    if (is_object()) return serialize_object(as_object());
+  string Value::serialize(const SerializeOptions &opts) const {
+    return serialize_impl(opts, 0);
+  }
+  
+  string Value::serialize_impl(const SerializeOptions &opts, size_t depth) const {
+    if (is_null())   return "null";
+    if (is_bool())   return as_bool() ? "true" : "false";
+    if (is_number()) {
+      std::ostringstream oss;
+      oss << as_number();
+      return oss.str();
+    }
+    if (is_string())
+      return serialize_string(as_string());
+
+    if (is_array()) {
+      const auto &arr = as_array();
+
+      string out = "[";
+      if (opts.pretty && !arr.empty())
+        out += "\n";
+
+      for (size_t i = 0; i < arr.size(); ++i) {
+        if (opts.pretty)
+          out += make_indent(depth + 1, opts.indent);
+
+        out += arr[i].serialize_impl(opts, depth + 1);
+
+        if (i + 1 < arr.size())
+          out += ",";
+
+        if (opts.pretty)
+          out += "\n";
+      }
+
+      if (opts.pretty && !arr.empty())
+        out += make_indent(depth, opts.indent);
+
+      out += "]";
+      return out;
+    }
+
+    if (is_object()) {
+      const auto &obj = as_object();
+
+      string out = "{";
+
+      if (opts.pretty && !obj.empty())
+        out += "\n";
+
+      size_t i = 0;
+      for (const auto &[key, val] : obj) {
+        if (opts.pretty)
+          out += make_indent(depth + 1, opts.indent);
+
+        out += serialize_string(key);
+        out += opts.pretty ? ": " : ":";
+        out += val.serialize_impl(opts, depth + 1);
+
+        if (++i < obj.size())
+          out += ",";
+
+        if (opts.pretty)
+          out += "\n";
+      }
+
+      if (opts.pretty && !obj.empty())
+        out += make_indent(depth, opts.indent);
+
+      out += "}";
+      return out;
+    }
 
     return "null";
   }
 
-  bool Value::serialize_to_file(const string &path) {
-    return write_file(path, { serialize() }, false);
+  bool Value::serialize_to_file(const string &path, const SerializeOptions &opts) const {
+    return write_file(path, { serialize(opts) }, false);
   }
 
-  string Value::serialize_number(f64 n) {
-    std::ostringstream oss;
-    oss << n;
-    return oss.str();
+  string Value::make_indent(size_t depth, size_t width) {
+    return string(depth * width, ' ');
   }
   
   string Value::serialize_string(const string &s) {
@@ -260,34 +323,6 @@ namespace json {
     }
 
     out += "\"";
-    return out;
-  }
-  
-  string Value::serialize_array(const Array &arr) {
-    string out = "[";
-
-    for (size_t i = 0; i < arr.size(); ++i) {
-      if (i > 0) out += ",";
-      out += arr[i].serialize();
-    }
-
-    out += "]";
-    return out;
-  }
-  
-  string Value::serialize_object(const Object &obj) {
-    string out = "{";
-    bool first = true;
-
-    for (const auto &[key, val] : obj) {
-      if (!first) out += ",";
-      first = false;
-      out += serialize_string(key);
-      out += ":";
-      out += val.serialize();
-    }
-
-    out += "}";
     return out;
   }
 

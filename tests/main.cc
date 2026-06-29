@@ -40,9 +40,19 @@ int main(void) {
 
     auto out = res.value->serialize();
     std::cout << out << std::endl;
+    auto out2 = res.value->serialize({ .pretty = true, .indent = 2 });
+    std::cout << out2 << std::endl;
+    auto out3 = res.value->serialize({ .pretty = true, .indent = 8 });
+    std::cout << out3 << std::endl;
 
     auto res2 = json::Parser(out).parse();
     assert(res2.error == json::Error::None);
+
+    auto res3 = json::Parser(out2).parse();
+    assert(res3.error == json::Error::None);
+
+    auto res4 = json::Parser(out3).parse();
+    assert(res4.error == json::Error::None);
 
     std::cout << "Memory OK" << std::endl;
   }
@@ -76,9 +86,13 @@ int main(void) {
     assert(subject->as_string() == "acct:suwako@sns.076.moe");
 
     auto out = res.value->serialize_to_file("webfinger2.json");
+    auto out2 = res.value->serialize_to_file("webfinger3.json", { .pretty = true, .indent = 2 });
 
     auto res2 = json::Parser::parse_from_file("webfinger2.json");
     assert(res2.error == json::Error::None);
+
+    auto res3 = json::Parser::parse_from_file("webfinger3.json");
+    assert(res3.error == json::Error::None);
 
     std::cout << "WebFinger OK" << std::endl;
   }
@@ -105,7 +119,7 @@ int main(void) {
       assert(scene.get("nodes")->is_array());
       auto &sceneNodes = scene.get("nodes")->as_array();
       assert(sceneNodes.size() == 1);
-      assert(sceneNodes[0].is_number() == 0);
+      assert(sceneNodes[0].as_number() == 0);
     }
 
     {
@@ -115,7 +129,7 @@ int main(void) {
       assert(arr[0].is_object());
       auto &node = arr[0].as_object();
 
-      assert(node.get("mesh")->is_number() == 0);
+      assert(node.get("mesh")->as_number() == 0);
     }
 
     {
@@ -123,7 +137,7 @@ int main(void) {
       auto &arr = buffers->as_array();
       assert(arr.size() == 1);
       assert(arr[0].is_object());
-      assert(arr[0].as_object().get("uri")->as_string() == "data:application/octet-stream;base64,AAABAAIAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAA");
+      assert(arr[0].as_object().get("uri")->as_string() == "data:application/octet-stream;base64,AAABAAIAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAA=");
       assert(arr[0].as_object().get("byteLength")->as_number() == 44);
     }
 
@@ -185,9 +199,13 @@ int main(void) {
     }
 
     auto out = res.value->serialize_to_file("gltf2.json");
+    auto out2 = res.value->serialize_to_file("gltf3.json", {.pretty = true, .indent = 2});
 
     auto res2 = json::Parser::parse_from_file("gltf2.json");
     assert(res2.error == json::Error::None);
+
+    auto res3 = json::Parser::parse_from_file("gltf3.json");
+    assert(res3.error == json::Error::None);
 
     std::cout << "glTF OK" << std::endl;
   }
@@ -236,12 +254,26 @@ int main(void) {
     assert(pubkey.get("publicKeyPem")->as_string() == "-----BEGIN PUBLIC KEY-----\n...\n----END PUBLIC KEY----");
 
     auto out = res.value->serialize_to_file("activitypub2.json");
+    auto out2 = res.value->serialize_to_file("activitypub3.json", { .pretty = true, .indent = 2 });
 
     auto res2 = json::Parser::parse_from_file("activitypub2.json");
     assert(res2.error == json::Error::None);
 
+    auto res3 = json::Parser::parse_from_file("activitypub3.json");
+    assert(res3.error == json::Error::None);
+
     std::cout << "ActivityPub OK" << std::endl;
   }
+
+  //{
+  //  const string src = R"({
+  //    "a": [,,,])";
+
+  //  auto res = json::Parser(src).parse();
+  //  assert(res.error == json::Error::SyntaxError);
+
+  //  std::cout << "Bad OK" << std::endl;
+  //}
 
   return 0;
 }

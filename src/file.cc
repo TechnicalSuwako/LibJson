@@ -28,7 +28,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 vector<u8> read_file(const string &filename, bool binary) {
   std::ios::openmode flags = std::ios::in | std::ios::ate;
-  if (binary) flags |= std::ios::binary;
+  //if (binary) flags |= std::ios::binary;
+  flags |= std::ios::binary;
 
   std::ifstream file(filename, flags);
   if (!file) {
@@ -36,7 +37,9 @@ vector<u8> read_file(const string &filename, bool binary) {
   }
 
   auto size = file.tellg();
+  file.clear();
   file.seekg(0, std::ios::beg);
+
   vector<u8> data(static_cast<size_t>(size));
   if (!file.read(reinterpret_cast<char *>(data.data()), size)) {
     throw std::runtime_error("ファイルの読み込みに失敗。");

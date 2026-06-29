@@ -41,6 +41,11 @@ namespace json {
     UnterminatedString,
   }; // enum class Error
 
+  struct SerializeOptions {
+    bool pretty = false;
+    size_t indent = 2;
+  };
+
   struct ParseResult;
   struct StringHash;
   class Object;
@@ -142,14 +147,15 @@ namespace json {
       static ParseResult parse(std::string_view jsonText);
 
     public:
-      string serialize() const;
-      bool serialize_to_file(const string &path);
+      string serialize(const SerializeOptions &opts = {}) const;
+      bool serialize_to_file(const string &path, const SerializeOptions &opts = {}) const;
 
     private:
-      static string serialize_number(f64 n);
+      static string make_indent(size_t depth, size_t width);
+
+    private:
+      string serialize_impl(const SerializeOptions &opts, size_t depth) const;
       static string serialize_string(const string &s);
-      static string serialize_array(const Array &arr);
-      static string serialize_object(const Object &obj);
 
     private:
       Variant m_Value;
