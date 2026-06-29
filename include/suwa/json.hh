@@ -86,7 +86,7 @@ namespace json {
       auto end() const { return m_Data.end(); }
 
     private:
-      using Pair = std::pair<string, Value>;
+      using Pair = std::pair<string, std::unique_ptr<Value>>;
       vector<Pair> m_Data;
       std::unordered_map<string, size_t, StringHash, std::equal_to<>> m_Index;
   }; // struct Object
