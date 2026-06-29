@@ -27,9 +27,9 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <fstream>
 
 vector<u8> read_file(const string &filename, bool binary) {
-  std::ios::openmode flags = std::ios::in | std::ios::ate;
-  //if (binary) flags |= std::ios::binary;
-  flags |= std::ios::binary;
+  std::ios::openmode flags = std::ios::in
+                           | std::ios::ate
+                           | std::ios::binary;
 
   std::ifstream file(filename, flags);
   if (!file) {

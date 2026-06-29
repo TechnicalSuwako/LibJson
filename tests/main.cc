@@ -23,6 +23,8 @@ int main(void) {
     assert(res.value->is_object());
 
     auto &root = res.value->as_object();
+    std::cout << root["name"] << std::endl;
+    assert(root.contains("kero"));
     assert(root.get("name")->as_string() == "諏訪子");
     assert(root.get("kero")->as_string() == "🐸");
     assert(root.get("age")->as_number() == 2300);
@@ -265,15 +267,51 @@ int main(void) {
     std::cout << "ActivityPub OK" << std::endl;
   }
 
-  //{
-  //  const string src = R"({
-  //    "a": [,,,])";
+  {
+    {
+      const string src = R"({
+      "a": [,,,])";
+      auto res = json::Parser(src).parse();
+      assert(res.error == json::Error::InvalidValue);
+    }
+    {
+      const string src = R"({"x":"\q"})";
+      auto res = json::Parser(src).parse();
+      assert(res.error == json::Error::SyntaxError);
+    }
+    {
+      const string src = R"({"x":1.2345g})";
+      auto res = json::Parser(src).parse();
+      assert(res.error == json::Error::SyntaxError);
+    }
+    {
+      const string src = R"({"x":"suwa})";
+      auto res = json::Parser(src).parse();
+      assert(res.error == json::Error::UnterminatedString);
+    }
+    {
+      const string src = R"({"x":tru})";
+      auto res = json::Parser(src).parse();
+      assert(res.error == json::Error::InvalidValue);
+    }
+    {
+      const string src = R"([[[[[[[[[[[]]]]]]]]]]])";
+      auto res = json::Parser(src).parse();
+      assert(res.error == json::Error::None);
+    }
+    {
+      const string src = R"([[[[[[[[[[[[]]]]]]]]]]])";
+      auto res = json::Parser(src).parse();
+      assert(res.error == json::Error::SyntaxError);
+    }
+    {
+      const string src = R"({"x":"\uXXXX"})";
+      auto res = json::Parser(src).parse();
+      assert(res.error == json::Error::SyntaxError);
+    }
 
-  //  auto res = json::Parser(src).parse();
-  //  assert(res.error == json::Error::SyntaxError);
-
-  //  std::cout << "Bad OK" << std::endl;
-  //}
+    std::cout << "Bad OK" << std::endl;
+  }
 
   return 0;
 }

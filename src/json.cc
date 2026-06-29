@@ -67,8 +67,8 @@ namespace json {
     if (c == '[') return parse_array();
     if (c == '"') {
       auto str = parse_string();
-      if (!str) return make_error(Error::UnterminatedString);
-      return { std::make_unique<Value>(std::move(*str)) };
+      if (!str.ok()) return str;
+      return str;
     }
 
     if (m_Text.substr(m_Pos, 4) == "true") {
@@ -108,8 +108,8 @@ namespace json {
 
     while (true) {
       skip_whitespace();
-      auto keyopt = parse_string();
-      if (!keyopt) return make_error(Error::SyntaxError);
+      auto keyres = parse_string();
+      if (!keyres.ok()) return keyres;
 
       skip_whitespace();
       if (!expect(':')) return make_error(Error::SyntaxError);
@@ -117,7 +117,10 @@ namespace json {
       auto valres = parse_value();
       if (!valres.ok()) return valres;
 
-      obj.insert(std::move(*keyopt), std::move(*valres.value));
+      obj.insert(
+        std::move(keyres.value->as_string()),
+        std::move(*valres.value)
+      );
 
       skip_whitespace();
       if (peek() == '}') {
@@ -157,17 +160,17 @@ namespace json {
     return { std::make_unique<Value>(std::move(arr)) };
   }
 
-  std::optional<string> Parser::parse_string() {
-    if (!expect('"')) return std::nullopt;
+  ParseResult Parser::parse_string() {
+    if (!expect('"')) return make_error(Error::SyntaxError);
 
     string res;
     res.reserve(32);
 
     while (m_Pos < m_Text.size()) {
       char c = consume();
-      if (c == '"') return res;
+      if (c == '"') return { std::make_unique<Value>(std::move(res)) };
       if (c == '\\') {
-        if (m_Pos >= m_Text.size()) return std::nullopt;
+        if (m_Pos >= m_Text.size()) make_error(Error::UnterminatedString);
         char esc = consume();
         switch (esc) {
           case '"': res += '"'; break;
@@ -178,14 +181,27 @@ namespace json {
           case 'n': res += '\n'; break;
           case 'r': res += '\r'; break;
           case 't': res += '\t'; break;
-          default: res += esc;
+          case 'u': {
+            for (int i = 0; i < 4; ++i) {
+              if (m_Pos >= m_Text.size())
+                return make_error(Error::UnterminatedString);
+
+              char h = consume();
+
+              if (!std::isxdigit((unsigned char)h))
+                return make_error(Error::SyntaxError);
+            }
+
+            break;
+          }
+          default: return make_error(Error::SyntaxError);
         }
       } else {
         res += c;
       }
     }
 
-    return std::nullopt;
+    return make_error(Error::UnterminatedString);
   }
 
   std::optional<f64> Parser::parse_number() {
@@ -365,24 +381,5 @@ namespace json {
   std::optional<string> Value::get_string() const {
     if (auto *b = std::get_if<string>(&m_Value)) return *b;
     return std::nullopt;
-  }
-
-  Value &Value::operator[](size_t index) {
-    if (!is_array()) as_array() = Array{};
-
-    auto &arr = as_array();
-    if (index >= arr.size()) arr.resize(index + 1);
-    return arr[index];
-  }
-
-  Value &Value::operator[](std::string_view key) {
-    if (!is_object()) as_object() = Object{};
-
-    auto *val = as_object().get(key);
-    if (!val) {
-      as_object().insert(string(key), Value{});
-      val = as_object().get(key);
-    }
-    return *val;
   }
 } // namespace json

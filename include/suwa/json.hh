@@ -69,6 +69,9 @@ namespace json {
     public:
       Object() = default;
 
+      Value &operator[](std::string_view key);
+      const Value &operator[](std::string_view key) const;
+
       void insert(string key, Value value);
       Value *get(std::string_view key);
       const Value *get(std::string_view key) const;
@@ -101,6 +104,27 @@ namespace json {
         Array,
         Object
       >;
+
+      // 配列
+      Value &operator[](size_t index) {
+        if (!is_array()) as_array() = Array{};
+
+        auto &arr = as_array();
+        if (index >= arr.size()) arr.resize(index + 1);
+        return arr[index];
+      }
+
+      // オブジェクト
+      Value &operator[](std::string_view key) {
+        if (!is_object()) as_object() = Object{};
+
+        auto *val = as_object().get(key);
+        if (!val) {
+          as_object().insert(string(key), Value{});
+          val = as_object().get(key);
+        }
+        return *val;
+      }
 
     public:
       Value() = default;
@@ -140,9 +164,6 @@ namespace json {
       std::optional<f64> get_number() const;
       std::optional<string> get_string() const;
 
-      Value &operator[](size_t index); // 配列
-      Value &operator[](std::string_view); // オブジェクト
-
     public:
       static ParseResult parse(std::string_view jsonText);
 
@@ -181,9 +202,22 @@ namespace json {
       ParseResult parse_value();
       ParseResult parse_object();
       ParseResult parse_array();
-      std::optional<string> parse_string();
+      ParseResult parse_string();
       std::optional<f64> parse_number();
   }; // class Parser
 } // namespace json
+
+inline std::ostream &operator<<(std::ostream &os, const json::Value &v) {
+  os << v.serialize();
+  return os;
+}
+
+inline json::Value &json::Object::operator[](std::string_view key) {
+  return *get(key);
+}
+
+inline const json::Value &json::Object::operator[](std::string_view key) const {
+  return *get(key);
+}
 
 #endif // JSON_HH
