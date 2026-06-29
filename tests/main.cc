@@ -169,10 +169,10 @@ int main(void) {
       assert(arr[0].as_object().get("componentType")->as_number() == 5123);
       assert(arr[0].as_object().get("count")->as_number() == 3);
       assert(arr[0].as_object().get("type")->as_string() == "SCALAR");
-      auto max0 = arr[0].as_object().get("max")->as_array();
+      const auto &max0 = arr[0].as_object().get("max")->as_array();
       assert(max0.size() == 1);
       assert(max0[0].get_number() == 2);
-      auto min0 = arr[0].as_object().get("min")->as_array();
+      const auto &min0 = arr[0].as_object().get("min")->as_array();
       assert(min0.size() == 1);
       assert(min0[0].get_number() == 0);
 
@@ -182,12 +182,12 @@ int main(void) {
       assert(arr[1].as_object().get("componentType")->as_number() == 5126);
       assert(arr[1].as_object().get("count")->as_number() == 3);
       assert(arr[1].as_object().get("type")->as_string() == "VEC3");
-      auto max1 = arr[1].as_object().get("max")->as_array();
+      const auto &max1 = arr[1].as_object().get("max")->as_array();
       assert(max1.size() == 3);
       assert(max1[0].get_number() == 1.0);
       assert(max1[1].get_number() == 1.0);
       assert(max1[2].get_number() == 0.0);
-      auto min1 = arr[1].as_object().get("min")->as_array();
+      const auto &min1 = arr[1].as_object().get("min")->as_array();
       assert(min1.size() == 3);
       assert(min1[0].get_number() == 0.0);
       assert(min1[1].get_number() == 0.0);

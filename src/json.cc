@@ -207,11 +207,12 @@ namespace json {
   std::optional<f64> Parser::parse_number() {
     cstr start = m_Text.data() + m_Pos;
     f64 num = 0.0;
-    auto [ptr, ec] = std::from_chars(start, m_Text.data() + m_Text.size(), num);
+    char *end = nullptr;
+    num = std::strtod(start, &end);
 
-    if (ec != std::errc() || ptr == start) return std::nullopt;
+    if (end == start) return std::nullopt;
 
-    m_Pos += (ptr - start);
+    m_Pos += (end - start);
     return num;
   }
   
@@ -297,7 +298,7 @@ namespace json {
 
         out += serialize_string(key);
         out += opts.pretty ? ": " : ":";
-        out += val.serialize_impl(opts, depth + 1);
+        out += val->serialize_impl(opts, depth + 1);
 
         if (++i < obj.size())
           out += ",";
@@ -343,23 +344,25 @@ namespace json {
   }
 
   void Object::insert(string key, Value value) {
+    auto ptr = std::make_unique<Value>(std::move(value));
+
     auto it = m_Index.find(key);
     if (it != m_Index.end()) {
-      m_Data[it->second].second = std::move(value);
+      m_Data[it->second].second = std::move(ptr);
     } else {
       m_Index[key] = m_Data.size();
-      m_Data.emplace_back(std::move(key), std::move(value));
+      m_Data.emplace_back(std::move(key), std::move(ptr));
     }
   }
 
   Value *Object::get(std::string_view key) {
     auto it = m_Index.find(key);
-    return it != m_Index.end() ? &m_Data[it->second].second : nullptr;
+    return it != m_Index.end() ? m_Data[it->second].second.get() : nullptr;
   }
 
   const Value *Object::get(std::string_view key) const {
     auto it = m_Index.find(key);
-    return it != m_Index.end() ? &m_Data[it->second].second : nullptr;
+    return it != m_Index.end() ? m_Data[it->second].second.get() : nullptr;
   }
 
   bool Object::contains(std::string_view key) const {

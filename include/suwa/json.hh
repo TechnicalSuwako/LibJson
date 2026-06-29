@@ -69,6 +69,12 @@ namespace json {
     public:
       Object() = default;
 
+      Object(const Object &) = delete;
+      Object &operator=(const Object &) = delete;
+
+      Object(Object &&) noexcept = default;
+      Object &operator=(Object &&) noexcept = default;
+
       Value &operator[](std::string_view key);
       const Value &operator[](std::string_view key) const;
 
@@ -86,7 +92,7 @@ namespace json {
       auto end() const { return m_Data.end(); }
 
     private:
-      using Pair = std::pair<string, Value>;
+      using Pair = std::pair<string, std::unique_ptr<Value>>;
       vector<Pair> m_Data;
       std::unordered_map<string, size_t, StringHash, std::equal_to<>> m_Index;
   }; // struct Object
@@ -138,8 +144,8 @@ namespace json {
       Value(u32 n) : m_Value(static_cast<f64>(n)) {}
       Value(string s) : m_Value(std::move(s)) {}
       Value(cstr s) : m_Value(string(s)) {}
-      Value(Array arr) : m_Value(std::move(arr)) {}
-      Value(Object obj) : m_Value(std::move(obj)) {}
+      Value(Array &&arr) : m_Value(std::move(arr)) {}
+      Value(Object &&obj) : m_Value(std::move(obj)) {}
 
     public:
       bool is_null() const { return std::holds_alternative<std::monostate>(m_Value); }
