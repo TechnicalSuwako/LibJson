@@ -19,3 +19,15 @@ $ cmake -B build -DCMAKE_BUILD_TYPE=Release
 $ cmake --build build --config Release
 $ cmake --install build --config Release
 ```
+
+## 確認出来た環境
+|          | x64 | AArch64 | RISC-V | POWER ISA | Loongarch | SPARC64 |
+|----------|-----|---------|--------|-----------|-----------|---------|
+| Windows  | ☑   | ❓      | -      | -         | -         | -       |
+| macOS    | -   | ☑       | -      | -         | -         | -       |
+| Linux    | ☑   | ❓      | ❓     | ❓        | ❓        | ❓      |
+| FreeBSD  | ☑   | ❓      | ❓     | ❓        | -         | -       |
+| OpenBSD  | ☑   | ❓      | ❓     | ❓        | ❓        | ❓      |
+| NetBSD   | ❓  | ❓      | -      | ❓        | ❓        | ❓      |
+| Switch   | -   | ☑       | -      | -         | -         | -       |
+| Switch 2 | -   | ☑       | -      | -         | -         | -       |
