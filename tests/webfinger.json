@@ -1,0 +1,10 @@
+{
+  "links": [
+    {
+      "href": "https://sns.076.moe/users/suwako",
+      "rel": "self",
+      "type": "application/activity+json"
+    }
+  ],
+  "subject": "acct:suwako@sns.076.moe"
+}

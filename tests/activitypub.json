@@ -1,0 +1,15 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/activitystreams",
+    "https://w3id.org/security/v1"
+  ],
+  "type": "Person",
+  "id": "https://example.social/users/sam",
+  "preferredUsername": "sam",
+  "inbox": "https://example.social/inbox",
+  "publicKey": {
+    "id": "https://example.social/users/sam#main-key",
+    "owner": "https://example.social/users/sam",
+    "publicKeyPem": "-----BEGIN PUBLIC KEY-----\n...\n----END PUBLIC KEY----"
+  }
+}
