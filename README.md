@@ -9,7 +9,7 @@ C++20で作ったミニマリストなJSONライブラリ
 > cmake --build build --config Release
 > mkdir -Force (自分のプロジェクトパス)\deps\libjson\lib
 > mkdir -Force (自分のプロジェクトパス)\deps\libjson\include
-> ROBOCOPY .\build\Release\libjson.lib (自分のプロジェクトパス)\deps\libjson\lib
+> ROBOCOPY .\build\Release\json.lib (自分のプロジェクトパス)\deps\libjson\lib
 > ROBOCOPY .\include (自分のプロジェクトパス)\deps\libjson /E /COPYALL
 ```
 
